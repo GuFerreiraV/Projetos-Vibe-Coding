@@ -1,0 +1,93 @@
+.layout-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--color-bg-primary);
+}
+
+.sidebar {
+    width: 280px;
+    background-color: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    transition: width 0.3s ease;
+}
+
+.sidebar h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dndnode {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: grab;
+    background-color: var(--color-bg-tertiary);
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.dndnode:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.dndnode-input {
+    border-color: #3b82f6;
+}
+
+.dndnode-output {
+    border-color: #ec4899;
+    /* Pink */
+}
+
+.dndnode-default {
+    border-color: #6366f1;
+    /* Indigo */
+}
+
+.flow-canvas-wrapper {
+    flex-grow: 1;
+    height: 100%;
+    background-color: var(--color-bg-primary);
+    background-image: radial-gradient(var(--color-bg-tertiary) 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+}
+
+.toolbar {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 20;
+    display: flex;
+    gap: 0.75rem;
+    background-color: var(--color-bg-secondary);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+}
+
+.description {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
