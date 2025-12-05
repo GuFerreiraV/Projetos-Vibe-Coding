@@ -7,12 +7,15 @@ import ReactFlow, {
     Controls,
     Background,
     MiniMap,
-    applyEdgeChanges, applyNodeChanges
+    applyEdgeChanges, applyNodeChanges,
+    getRectOfNodes,
+    getTransformForBounds
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Save, Download, Cloud, Trash2 } from 'lucide-react';
 import { toPng, toSvg } from 'html-to-image';
 import { nodeTypes } from './CustomNodes';
+import RenameModal from './RenameModal';
 
 const initialNodes = [
     {
@@ -31,6 +34,12 @@ const FlowCanvas = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [reactFlowInstance, setReactFlowInstance] = useState(null);
+
+    // Modal State
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalValue, setModalValue] = useState('');
+    const [editingItem, setEditingItem] = useState(null); // { type: 'node' | 'edge', id: string }
 
     const onConnect = useCallback(
         (params) => setEdges((eds) => addEdge({ ...params, type: 'smoothstep', label: '' }, eds)),
@@ -70,56 +79,105 @@ const FlowCanvas = () => {
         [reactFlowInstance],
     );
 
+    // Renaming Logic with Modal
     const onNodeDoubleClick = useCallback((event, node) => {
-        const label = window.prompt('Enter new label for this node:', node.data.label);
-        if (label !== null) {
+        setModalTitle('Rename Node');
+        setModalValue(node.data.label);
+        setEditingItem({ type: 'node', id: node.id });
+        setModalOpen(true);
+    }, []);
+
+    const onEdgeDoubleClick = useCallback((event, edge) => {
+        setModalTitle('Edit Connection Label');
+        setModalValue(edge.label || '');
+        setEditingItem({ type: 'edge', id: edge.id });
+        setModalOpen(true);
+    }, []);
+
+    const handleRenameSave = (newValue) => {
+        if (editingItem?.type === 'node') {
             setNodes((nds) =>
                 nds.map((n) => {
-                    if (n.id === node.id) {
-                        n.data = { ...n.data, label };
+                    if (n.id === editingItem.id) {
+                        // Keep other data properties, just update label
+                        n.data = { ...n.data, label: newValue };
                     }
                     return n;
                 })
             );
-        }
-    }, [setNodes]);
-
-    const onEdgeDoubleClick = useCallback((event, edge) => {
-        const label = window.prompt('Enter label for join:', edge.label || '');
-        if (label !== null) {
+        } else if (editingItem?.type === 'edge') {
             setEdges((eds) =>
                 eds.map((e) => {
-                    if (e.id === edge.id) {
-                        e.label = label;
+                    if (e.id === editingItem.id) {
+                        e.label = newValue;
                     }
                     return e;
                 })
             );
         }
-    }, [setEdges]);
+        setModalOpen(false);
+        setEditingItem(null);
+    };
 
     const onDeleteSelected = useCallback(() => {
-        if (!reactFlowInstance) return;
-
-        // Deleting via state is cleaner in this hook than using applyChanges manually on the raw array,
-        // though ReactFlow handles 'Delete' key automatically. This button adds explicit UI action.
-        const nodesToDelete = nodes.filter((n) => n.selected);
-        const edgesToDelete = edges.filter((e) => e.selected);
-
-        // We can use the setNodes/setEdges to filter out selected
         setNodes((nds) => nds.filter((node) => !node.selected));
         setEdges((eds) => eds.filter((edge) => !edge.selected));
+    }, [setNodes, setEdges]);
 
-    }, [nodes, edges, setNodes, setEdges, reactFlowInstance]);
-
+    // Enhanced Export Logic
     const downloadImage = (format) => {
-        if (reactFlowWrapper.current === null) {
-            return;
-        }
+        // 1. Get bounds of all nodes to ensure we capture the whole flow
+        // We use getRectOfNodes from reactflow utility
+        const nodesBounds = getRectOfNodes(nodes);
+
+        // Add some padding
+        const imageWidth = nodesBounds.width + 100;
+        const imageHeight = nodesBounds.height + 100;
+
+        // The transform to enable fitting the content in the image
+        // This moves the "camera" to the top-left of the content
+        const transform = getTransformForBounds(
+            nodesBounds,
+            imageWidth,
+            imageHeight,
+            0.5, // min zoom
+            2,   // max zoom
+            50   // padding
+        );
+
+        // However, html-to-image 'style' transform prop is absolute, so simpler hack:
+        // We just want to shift the content so that x=nodesBounds.x is at 50, y=nodesBounds.y is at 50.
+        // The export library takes a snapshot of the DOM element. 
+        // If we use the viewport rect, we need to ensure the transform makes it visible.
+
+        // Actually, the best way recommended by ReactFlow is:
+        // Target the '.react-flow__viewport' element!
+        // But filters are safer to just hide controls on the MAIN container.
 
         const exportFn = format === 'svg' ? toSvg : toPng;
+        const filter = (node) => {
+            // Exclude Toolbar and Controls from the capture
+            if (node.classList && (
+                node.classList.contains('toolbar') ||
+                node.classList.contains('react-flow__controls') ||
+                node.classList.contains('react-flow__minimap')
+            )) {
+                return false;
+            }
+            return true;
+        };
 
-        exportFn(reactFlowWrapper.current, { backgroundColor: '#0f172a' })
+        exportFn(reactFlowWrapper.current, {
+            backgroundColor: '#0f172a',
+            width: imageWidth,
+            height: imageHeight,
+            style: {
+                width: imageWidth,
+                height: imageHeight,
+                transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
+            },
+            filter: filter
+        })
             .then((dataUrl) => {
                 const link = document.createElement('a');
                 link.download = `flowchart-export.${format}`;
@@ -152,6 +210,7 @@ const FlowCanvas = () => {
                     <Trash2 size={18} /> Delete
                 </button>
             </div>
+
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -171,6 +230,14 @@ const FlowCanvas = () => {
                 <Background color="#334155" gap={16} />
                 <MiniMap style={{ background: '#1e293b' }} nodeColor={() => '#6366f1'} />
             </ReactFlow>
+
+            <RenameModal
+                isOpen={modalOpen}
+                title={modalTitle}
+                initialValue={modalValue}
+                onClose={() => setModalOpen(false)}
+                onSave={handleRenameSave}
+            />
         </div>
     );
 };
