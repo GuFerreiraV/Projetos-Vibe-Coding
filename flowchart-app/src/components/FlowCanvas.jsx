@@ -125,68 +125,46 @@ const FlowCanvas = () => {
     }, [setNodes, setEdges]);
 
     // Enhanced Export Logic
-    const downloadImage = (format) => {
-        // 1. Get bounds of all nodes to ensure we capture the whole flow
-        // We use getRectOfNodes from reactflow utility
+    const downloadImage = async (format) => {
+        // We target the viewport to ensure we capture all nodes/edges regardless of current view
+        const viewport = document.querySelector('.react-flow__viewport');
+
+        if (!viewport) {
+            console.error('Viewport not found');
+            return;
+        }
+
+        // Calculate bounds of all nodes
         const nodesBounds = getRectOfNodes(nodes);
 
-        // Add some padding
-        const imageWidth = nodesBounds.width + 100;
-        const imageHeight = nodesBounds.height + 100;
+        // Add padding
+        const padding = 50;
+        const imageWidth = nodesBounds.width + (padding * 2);
+        const imageHeight = nodesBounds.height + (padding * 2);
 
-        // The transform to enable fitting the content in the image
-        // This moves the "camera" to the top-left of the content
-        const transform = getTransformForBounds(
-            nodesBounds,
-            imageWidth,
-            imageHeight,
-            0.5, // min zoom
-            2,   // max zoom
-            50   // padding
-        );
-
-        // However, html-to-image 'style' transform prop is absolute, so simpler hack:
-        // We just want to shift the content so that x=nodesBounds.x is at 50, y=nodesBounds.y is at 50.
-        // The export library takes a snapshot of the DOM element. 
-        // If we use the viewport rect, we need to ensure the transform makes it visible.
-
-        // Actually, the best way recommended by ReactFlow is:
-        // Target the '.react-flow__viewport' element!
-        // But filters are safer to just hide controls on the MAIN container.
-
-        const exportFn = format === 'svg' ? toSvg : toPng;
-        const filter = (node) => {
-            // Exclude Toolbar and Controls from the capture
-            if (node.classList && (
-                node.classList.contains('toolbar') ||
-                node.classList.contains('react-flow__controls') ||
-                node.classList.contains('react-flow__minimap')
-            )) {
-                return false;
-            }
-            return true;
-        };
-
-        exportFn(reactFlowWrapper.current, {
+        const options = {
             backgroundColor: '#0f172a',
             width: imageWidth,
             height: imageHeight,
             style: {
                 width: imageWidth,
                 height: imageHeight,
-                transform: `translate(${-nodesBounds.x + 50}px, ${-nodesBounds.y + 50}px)`,
+                // Shift the content so that the top-left node is at (padding, padding)
+                transform: `translate(${-nodesBounds.x + padding}px, ${-nodesBounds.y + padding}px)`,
             },
-            filter: filter
-        })
-            .then((dataUrl) => {
-                const link = document.createElement('a');
-                link.download = `flowchart-export.${format}`;
-                link.href = dataUrl;
-                link.click();
-            })
-            .catch((err) => {
-                console.error('oops, something went wrong!', err);
-            });
+        };
+
+        const exportFn = format === 'svg' ? toSvg : toPng;
+
+        try {
+            const dataUrl = await exportFn(viewport, options);
+            const link = document.createElement('a');
+            link.download = `flowchart-export.${format}`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('Export failed', err);
+        }
     };
 
     const saveToDrive = () => {
