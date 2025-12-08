@@ -49,18 +49,39 @@
     box-shadow: var(--shadow-sm);
 }
 
-.dndnode-input {
+.dndnode-input:hover {
     border-color: #3b82f6;
 }
 
-.dndnode-output {
+.dndnode-output:hover {
     border-color: #ec4899;
     /* Pink */
 }
 
-.dndnode-default {
+.dndnode-default:hover {
+    border-color: #14b8a6;
+    /* Teal */
+}
+
+.dndnode-decision:hover {
+    border-color: #eab308;
+    /* Yellow */
+}
+
+.dndnode-subprocess:hover {
+    border-color: #f43f5e;
+}
+
+.dndnode-database:hover {
+    border-color: #a855f7;
+}
+
+.dndnode-manual-input:hover {
     border-color: #6366f1;
-    /* Indigo */
+}
+
+.dndnode-input-output:hover {
+    border-color: #22c55e;
 }
 
 .flow-canvas-wrapper {
@@ -90,4 +111,29 @@
     margin-bottom: 1rem;
     font-size: 0.875rem;
     color: var(--color-text-secondary);
+}
+
+/* Icon Colors - Manual utilities since Tailwind is not installed */
+.text-blue-500 {
+    color: #3b82f6;
+}
+
+.text-indigo-500 {
+    color: #6366f1;
+}
+
+.text-teal-500 {
+    color: #14b8a6;
+}
+
+.text-yellow-500 {
+    color: #eab308;
+}
+
+.text-purple-500 {
+    color: #a855f7;
+}
+
+.text-pink-500 {
+    color: #ec4899;
 }
