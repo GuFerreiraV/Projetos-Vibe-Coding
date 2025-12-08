@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
+import { Database } from 'lucide-react';
 
 const StartNode = memo(({ data }) => {
     return (
@@ -126,28 +127,18 @@ const DatabaseNode = memo(({ data }) => {
     return (
         <div style={{
             position: 'relative',
-            width: '80px',
-            height: '100px',
-            background: '#a855f7',
-            borderRadius: '50% / 20%', // Cylinder effect top/bottom
-            color: 'white',
-            textAlign: 'center',
+            minWidth: '80px',
+            minHeight: '80px',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid #9333ea'
         }}>
-            <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: 0, right: 0, background: '#a855f7' }}></div>
-            <div style={{ zIndex: 1, position: 'relative' }}>{data.label}</div>
+            <Database size={50} className="text-purple-500" />
+            <div style={{ marginTop: '4px', textAlign: 'center' }}>{data.label}</div>
 
-            {/* Top visual elliptical border */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: '20%',
-                border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%'
-            }}></div>
-
-            <Handle type="target" position={Position.Top} style={{ background: '#fff' }} />
-            <Handle type="source" position={Position.Bottom} style={{ background: '#fff' }} />
+            <Handle type="target" position={Position.Top} style={{ background: '#fff', top: 0 }} />
+            <Handle type="source" position={Position.Bottom} style={{ background: '#fff', bottom: 0 }} />
         </div>
     );
 });
