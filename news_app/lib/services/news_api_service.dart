@@ -11,8 +11,9 @@ class NewsApiService {
   Future<NewsResponse> fetchNews({int page = 1}) async {
     final url = Uri.parse(
       '$_baseUrl/everything?'
-      'q=tecnologia OR software OR programação OR inteligência artificial&'
+      'q=(tecnologia OR software OR programação OR inteligência artificial) -futebol -filmes -séries -cinema -bbb -novela&'
       'language=pt&'
+      'excludeDomains=catracalivre.com.br,www.catracalivre.com.br&'
       'sortBy=publishedAt&'
       'pageSize=$pageSize&'
       'page=$page&'

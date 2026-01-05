@@ -29,7 +29,7 @@ class NewsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            if (article.imageUrl != null)
+            if (article.imageUrl != null && article.imageUrl!.isNotEmpty)
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
@@ -41,21 +41,21 @@ class NewsCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     height: 180,
-                    color: theme.colorScheme.surface,
+                    color: theme.colorScheme.surfaceContainer,
                     child: const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 180,
-                    color: theme.colorScheme.surface,
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      size: 48,
-                      color: theme.iconTheme.color,
-                    ),
-                  ),
+                  errorWidget: (context, url, error) =>
+                      _buildPlaceholder(theme),
                 ),
+              )
+            else
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: _buildPlaceholder(theme),
               ),
 
             // Content
@@ -146,6 +146,32 @@ class NewsCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(ThemeData theme) {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: theme.colorScheme.surfaceVariant,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.newspaper_rounded,
+            size: 48,
+            color: theme.colorScheme.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tech News',
+            style: TextStyle(
+              color: theme.colorScheme.primary.withOpacity(0.5),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

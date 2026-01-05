@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/news_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/news_card.dart';
 import '../widgets/loading_indicator.dart';
-import 'detail_screen.dart';
 import 'saved_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -141,13 +141,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 final article = newsProvider.articles[index];
                 return NewsCard(
                   article: article,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailScreen(article: article),
-                      ),
-                    );
+                  onTap: () async {
+                    if (await canLaunchUrl(Uri.parse(article.url))) {
+                      await launchUrl(
+                        Uri.parse(article.url),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Não foi possível abrir o link'),
+                          ),
+                        );
+                      }
+                    }
                   },
                   onSave: () {
                     newsProvider.toggleSaveArticle(article);

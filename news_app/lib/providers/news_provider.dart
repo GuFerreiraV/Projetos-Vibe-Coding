@@ -60,7 +60,21 @@ class NewsProvider extends ChangeNotifier {
     try {
       _currentPage++;
       final response = await _apiService.fetchNews(page: _currentPage);
-      _articles.addAll(response.articles);
+
+      // Filter out duplicates based on URL or Title
+      final existingUrls = _articles.map((a) => a.url).toSet();
+      final existingTitles = _articles.map((a) => a.title).toSet();
+
+      final newArticles = response.articles.where((article) {
+        return !existingUrls.contains(article.url) &&
+            !existingTitles.contains(article.title);
+      }).toList();
+
+      _articles.addAll(newArticles);
+
+      // If we filtered all articles but API says there are more, load next page automatically?
+      // For now, let's keep it simple. If data.length < response.articles.length it means we filtered some.
+
       _hasMore = response.hasMore;
 
       // Mark saved articles
