@@ -11,8 +11,8 @@ class NewsApiService {
   Future<NewsResponse> fetchNews({int page = 1}) async {
     final url = Uri.parse(
       '$_baseUrl/everything?'
-      'q=tecnologia OR tech OR software OR programação OR IA OR inteligência artificial OR NVIDIA&'
-      'domains=g1.globo.com,tecmundo.com.br,olhardigital.com.br,canaltech.com.br&'
+      'q=tecnologia OR software OR programação OR inteligência artificial&'
+      'language=pt&'
       'sortBy=publishedAt&'
       'pageSize=$pageSize&'
       'page=$page&'
@@ -29,6 +29,7 @@ class NewsApiService {
           final articles = (data['articles'] as List)
               .map((article) => Article.fromJson(article))
               .where((article) => article.title != '[Removed]')
+              .where((article) => _isTechRelated(article.title))
               .toList();
 
           final totalResults = data['totalResults'] as int? ?? 0;
@@ -55,6 +56,68 @@ class NewsApiService {
       if (e is Exception) rethrow;
       throw Exception('Erro de conexão: $e');
     }
+  }
+
+  /// Verifica se o título contém palavras-chave relacionadas a tecnologia
+  bool _isTechRelated(String title) {
+    final lowerTitle = title.toLowerCase();
+    final techKeywords = [
+      'tech',
+      'tecnologia',
+      'software',
+      'programação',
+      'programador',
+      'desenvolvedor',
+      'desenvolvimento',
+      'app',
+      'aplicativo',
+      'inteligência artificial',
+      'ia',
+      'ai',
+      'machine learning',
+      'startup',
+      'google',
+      'microsoft',
+      'apple',
+      'amazon',
+      'meta',
+      'nvidia',
+      'openai',
+      'chatgpt',
+      'android',
+      'iphone',
+      'samsung',
+      'internet',
+      'cibersegurança',
+      'hacker',
+      'dados',
+      'cloud',
+      'nuvem',
+      'computador',
+      'notebook',
+      'celular',
+      'smartphone',
+      'games',
+      'jogos',
+      'gaming',
+      'console',
+      'playstation',
+      'xbox',
+      'nintendo',
+      'bitcoin',
+      'cripto',
+      'blockchain',
+      'robô',
+      'automação',
+      'digital',
+      '5g',
+      'chip',
+      'processador',
+      'gpu',
+      'cpu',
+    ];
+
+    return techKeywords.any((keyword) => lowerTitle.contains(keyword));
   }
 }
 
