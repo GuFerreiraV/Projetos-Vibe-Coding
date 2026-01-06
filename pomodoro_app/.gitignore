@@ -45,7 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Sistemas Operacionais
-android/
+# android/
 ios/
 macos/
 web/

@@ -24,7 +24,9 @@ class WaveCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isActive ? AppTheme.primary.withOpacity(0.1) : Colors.white,
+        color: isActive
+            ? AppTheme.primary.withValues(alpha: 0.1)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isActive ? AppTheme.primary : Colors.grey.shade200,
@@ -32,7 +34,7 @@ class WaveCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -62,7 +64,7 @@ class WaveCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            
+
             // Informações da onda
             Expanded(
               child: Column(
@@ -95,7 +97,7 @@ class WaveCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Botões de ação
             if (onEdit != null || onDelete != null) ...[
               if (onEdit != null)
@@ -123,7 +125,7 @@ class WaveCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

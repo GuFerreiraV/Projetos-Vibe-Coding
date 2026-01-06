@@ -17,10 +17,15 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeTimer();
+    // Adia a inicialização para após o primeiro frame ser construído
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeTimer();
+    });
   }
 
   Future<void> _initializeTimer() async {
+    if (!mounted) return;
+
     final sequenceProvider = context.read<SequenceProvider>();
     final timerProvider = context.read<TimerProvider>();
 
@@ -28,6 +33,8 @@ class _TimerScreenState extends State<TimerScreen> {
     if (sequenceProvider.sequences.isEmpty) {
       await sequenceProvider.loadSequences();
     }
+
+    if (!mounted) return;
 
     // Define a sequência padrão no timer se não houver uma
     if (timerProvider.currentSequence == null &&
@@ -180,8 +187,8 @@ class _TimerScreenState extends State<TimerScreen> {
                 border: isCurrent
                     ? Border.all(
                         color: timerProvider.isBreak
-                            ? AppTheme.timerBreak.withOpacity(0.3)
-                            : AppTheme.primary.withOpacity(0.3),
+                            ? AppTheme.timerBreak.withValues(alpha: 0.3)
+                            : AppTheme.primary.withValues(alpha: 0.3),
                         width: 3,
                       )
                     : null,
@@ -272,7 +279,7 @@ class _TimerScreenState extends State<TimerScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primary.withOpacity(0.4),
+              color: AppTheme.primary.withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -328,6 +335,7 @@ class _TimerScreenState extends State<TimerScreen> {
             label: 'Onda',
             value: () {
               final waveCount = timerProvider.currentSequence?.waveCount ?? 0;
+              if (waveCount == 0) return '0/0';
               final currentWave = (timerProvider.currentWaveIndex + 1).clamp(
                 1,
                 waveCount,
@@ -422,7 +430,7 @@ class _TimerScreenState extends State<TimerScreen> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppTheme.primary
-                        : AppTheme.primary.withOpacity(0.1),
+                        : AppTheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(

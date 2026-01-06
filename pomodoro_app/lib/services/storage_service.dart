@@ -1,29 +1,18 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../models/study_sequence.dart';
 import '../models/study_session.dart';
 
 /// Serviço de armazenamento local usando SharedPreferences (localStorage no web)
 class StorageService {
-  static const String _sequencesKey = 'pomodoro_sequences';
-  static const String _sessionsKey = 'pomodoro_sessions';
-
-  SharedPreferences? _prefs;
-
-  /// Obtém instância do SharedPreferences
-  Future<SharedPreferences> get prefs async {
-    _prefs ??= await SharedPreferences.getInstance();
-    return _prefs!;
-  }
-
   /// Inicializa o serviço com dados padrão se necessário
   Future<void> initialize() async {
-    final p = await prefs;
+    final box = await Hive.openBox<StudySequence>('sequences');
 
     // Se não houver sequências, adiciona a padrão
-    if (!p.containsKey(_sequencesKey)) {
+    if (box.isEmpty) {
       final defaultSequence = StudySequence.defaultSequence.copyWith(id: 1);
-      await _saveSequences([defaultSequence]);
+      await box.add(defaultSequence);
     }
   }
 
@@ -31,23 +20,16 @@ class StorageService {
 
   /// Obtém todas as sequências
   Future<List<StudySequence>> getSequences() async {
-    final p = await prefs;
-    final jsonString = p.getString(_sequencesKey);
-
-    if (jsonString == null || jsonString.isEmpty) {
-      return [];
-    }
-
-    final List<dynamic> jsonList = jsonDecode(jsonString);
-    return jsonList.map((json) => StudySequence.fromMap(json)).toList();
+    final box = await Hive.openBox<StudySequence>('sequences');
+    return box.values.toList();
   }
 
-  /// Salva todas as sequências
-  Future<void> _saveSequences(List<StudySequence> sequences) async {
-    final p = await prefs;
-    final jsonList = sequences.map((s) => s.toMap()).toList();
-    await p.setString(_sequencesKey, jsonEncode(jsonList));
-  }
+  // /// Salva todas as sequências
+  // Future<void> _saveSequences(List<StudySequence> sequences) async {
+  //   final p = await prefs;
+  //   final jsonList = sequences.map((s) => s.toMap()).toList();
+  //   await p.setString(_sequencesKey, jsonEncode(jsonList));
+  // }
 
   /// Obtém sequência por ID
   Future<StudySequence?> getSequenceById(int id) async {
@@ -61,7 +43,8 @@ class StorageService {
 
   /// Insere uma nova sequência
   Future<int> insertSequence(StudySequence sequence) async {
-    final sequences = await getSequences();
+    final box = await Hive.openBox<StudySequence>('sequences');
+    final sequences = box.values.toList();
 
     // Gera novo ID
     final maxId = sequences.isEmpty
@@ -70,51 +53,53 @@ class StorageService {
     final newId = maxId + 1;
 
     final newSequence = sequence.copyWith(id: newId);
-    sequences.add(newSequence);
 
-    await _saveSequences(sequences);
+    await box.add(newSequence);
+
     return newId;
   }
 
   /// Atualiza uma sequência existente
   Future<void> updateSequence(StudySequence sequence) async {
-    final sequences = await getSequences();
-    final index = sequences.indexWhere((s) => s.id == sequence.id);
+    final box = await Hive.openBox<StudySequence>('sequences');
 
-    if (index != -1) {
-      sequences[index] = sequence;
-      await _saveSequences(sequences);
+    // Encontra a sequência pelo ID
+    try {
+      final sequenceInDb = box.values.firstWhere((s) => s.id == sequence.id);
+
+      // Substitui o valor usando a chave do Hive
+      await box.put(sequenceInDb.key, sequence);
+    } catch (e) {
+      print('Erro ao atualizar sequência: ${sequence.id} não encontrada.');
     }
   }
 
   /// Deleta uma sequência
   Future<void> deleteSequence(int id) async {
-    final sequences = await getSequences();
-    sequences.removeWhere((s) => s.id == id);
-    await _saveSequences(sequences);
+    final box = await Hive.openBox<StudySequence>('sequences');
+
+    try {
+      final sequenceInDb = box.values.firstWhere((s) => s.id == id);
+      await sequenceInDb.delete();
+    } catch (e) {
+      // Sequência não encontrada ou já deletada
+    }
   }
 
   // ==================== OPERAÇÕES DE SESSÕES ====================
 
   /// Obtém todas as sessões de estudo
   Future<List<StudySession>> getSessions() async {
-    final p = await prefs;
-    final jsonString = p.getString(_sessionsKey);
-
-    if (jsonString == null || jsonString.isEmpty) {
-      return [];
-    }
-
-    final List<dynamic> jsonList = jsonDecode(jsonString);
-    return jsonList.map((json) => StudySession.fromMap(json)).toList();
+    final box = await Hive.openBox<StudySession>('sessions');
+    return box.values.toList();
   }
 
   /// Salva todas as sessões
-  Future<void> _saveSessions(List<StudySession> sessions) async {
-    final p = await prefs;
-    final jsonList = sessions.map((s) => s.toMap()).toList();
-    await p.setString(_sessionsKey, jsonEncode(jsonList));
-  }
+  // Future<void> _saveSessions(List<StudySession> sessions) async {
+  //   final p = await prefs;
+  //   final jsonList = sessions.map((s) => s.toMap()).toList();
+  //   await p.setString(_sessionsKey, jsonEncode(jsonList));
+  // }
 
   /// Obtém sessões de um mês específico
   Future<List<StudySession>> getSessionsByMonth(int year, int month) async {
@@ -139,11 +124,11 @@ class StorageService {
 
   /// Obtém o total de minutos estudados em um dia
   Future<int> getTotalMinutesByDate(DateTime date) async {
-    final sessions = await getSessionsByDate(date);
-    return sessions.fold<int>(
-      0,
-      (sum, session) => sum + session.durationMinutes,
-    );
+    final sessions = await getSessions();
+
+    return sessions
+        .where((s) => isSameDay(s.date, date)) // Logica de comparação de data
+        .fold<int>(0, (sum, s) => sum + s.durationMinutes);
   }
 
   /// Obtém mapa de minutos estudados por dia do mês
@@ -165,33 +150,14 @@ class StorageService {
   }
 
   /// Insere uma nova sessão de estudo
-  Future<int> insertSession(StudySession session) async {
-    final sessions = await getSessions();
-
-    // Gera novo ID
-    final maxId = sessions.isEmpty
-        ? 0
-        : sessions.map((s) => s.id ?? 0).reduce((a, b) => a > b ? a : b);
-    final newId = maxId + 1;
-
-    final newSession = session.copyWith(id: newId);
-    sessions.add(newSession);
-
-    await _saveSessions(sessions);
-    return newId;
+  Future<void> insertSession(StudySession session) async {
+    final box = Hive.box<StudySession>('sessions');
+    // Adiciona ao banco. O Hive retorna a chave (int) gerada.
+    await box.add(session);
   }
 
   /// Deleta uma sessão
-  Future<void> deleteSession(int id) async {
-    final sessions = await getSessions();
-    sessions.removeWhere((s) => s.id == id);
-    await _saveSessions(sessions);
-  }
-
-  /// Limpa todos os dados (para debug)
-  Future<void> clearAll() async {
-    final p = await prefs;
-    await p.remove(_sequencesKey);
-    await p.remove(_sessionsKey);
+  Future<void> deleteSession(StudySession session) async {
+    await session.delete();
   }
 }

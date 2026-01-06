@@ -19,10 +19,14 @@ class _SequencesScreenState extends State<SequencesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSequences();
+    // Adia o carregamento para após o primeiro frame ser construído
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSequences();
+    });
   }
 
   Future<void> _loadSequences() async {
+    if (!mounted) return;
     await context.read<SequenceProvider>().loadSequences();
   }
 
@@ -60,12 +64,12 @@ class _SequencesScreenState extends State<SequencesScreen> {
                 sequence: sequence,
                 isSelected: provider.selectedSequence?.id == sequence.id,
                 onTap: () => provider.selectSequence(sequence),
-                onEdit: sequence.isDefault 
-                  ? null 
-                  : () => _showEditSequenceDialog(context, sequence),
+                onEdit: sequence.isDefault
+                    ? null
+                    : () => _showEditSequenceDialog(context, sequence),
                 onDelete: sequence.isDefault
-                  ? null
-                  : () => _confirmDeleteSequence(context, sequence),
+                    ? null
+                    : () => _confirmDeleteSequence(context, sequence),
               );
             },
           );
@@ -88,7 +92,7 @@ class _SequencesScreenState extends State<SequencesScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
+              color: AppTheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -109,10 +113,7 @@ class _SequencesScreenState extends State<SequencesScreen> {
           const SizedBox(height: 8),
           const Text(
             'Crie sua primeira sequência de estudo',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -159,7 +160,10 @@ class _SequencesScreenState extends State<SequencesScreen> {
               context.read<SequenceProvider>().deleteSequence(sequence.id!);
               Navigator.pop(context);
             },
-            child: const Text('Excluir', style: TextStyle(color: AppTheme.error)),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: AppTheme.error),
+            ),
           ),
         ],
       ),
@@ -186,15 +190,13 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
   void initState() {
     super.initState();
     _isEditing = widget.sequence != null;
-    
+
     if (_isEditing) {
       _nameController.text = widget.sequence!.name;
       _waves = List.from(widget.sequence!.waves);
     } else {
       // Adiciona uma onda padrão
-      _waves = [
-        StudyWave(workDuration: 25, breakDuration: 5, name: '1ª Onda'),
-      ];
+      _waves = [StudyWave(workDuration: 25, breakDuration: 5, name: '1ª Onda')];
     }
   }
 
@@ -224,7 +226,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(20),
@@ -246,7 +248,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: SingleChildScrollView(
@@ -264,7 +266,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Ondas
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -285,7 +287,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Lista de ondas
                   ..._waves.asMap().entries.map((entry) {
                     final index = entry.key;
@@ -294,16 +296,18 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
                       wave: wave,
                       index: index,
                       onEdit: () => _editWave(index),
-                      onDelete: _waves.length > 1 ? () => _deleteWave(index) : null,
+                      onDelete: _waves.length > 1
+                          ? () => _deleteWave(index)
+                          : null,
                     );
                   }),
-                  
+
                   const SizedBox(height: 20),
                 ],
               ),
             ),
           ),
-          
+
           // Footer
           Container(
             padding: const EdgeInsets.all(20),
@@ -311,7 +315,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -344,11 +348,13 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
 
   void _addWave() {
     setState(() {
-      _waves.add(StudyWave(
-        workDuration: 25,
-        breakDuration: 5,
-        name: '${_waves.length + 1}ª Onda',
-      ));
+      _waves.add(
+        StudyWave(
+          workDuration: 25,
+          breakDuration: 5,
+          name: '${_waves.length + 1}ª Onda',
+        ),
+      );
     });
   }
 
@@ -364,8 +370,12 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
 
   void _editWave(int index) {
     final wave = _waves[index];
-    final workController = TextEditingController(text: wave.workDuration.toString());
-    final breakController = TextEditingController(text: wave.breakDuration.toString());
+    final workController = TextEditingController(
+      text: wave.workDuration.toString(),
+    );
+    final breakController = TextEditingController(
+      text: wave.breakDuration.toString(),
+    );
 
     showDialog(
       context: context,
@@ -379,7 +389,10 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Tempo de trabalho (min)',
-                prefixIcon: Icon(Icons.local_fire_department_rounded, color: AppTheme.primary),
+                prefixIcon: Icon(
+                  Icons.local_fire_department_rounded,
+                  color: AppTheme.primary,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -388,7 +401,10 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: 'Tempo de descanso (min)',
-                prefixIcon: Icon(Icons.coffee_rounded, color: AppTheme.timerBreak),
+                prefixIcon: Icon(
+                  Icons.coffee_rounded,
+                  color: AppTheme.timerBreak,
+                ),
               ),
             ),
           ],
@@ -402,7 +418,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
             onPressed: () {
               final work = int.tryParse(workController.text) ?? 25;
               final breakTime = int.tryParse(breakController.text) ?? 5;
-              
+
               setState(() {
                 _waves[index] = StudyWave(
                   workDuration: work,
@@ -421,7 +437,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
 
   void _saveSequence() async {
     final name = _nameController.text.trim();
-    
+
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Digite um nome para a sequência')),
@@ -430,7 +446,7 @@ class _SequenceEditorSheetState extends State<_SequenceEditorSheet> {
     }
 
     final provider = context.read<SequenceProvider>();
-    
+
     if (_isEditing) {
       await provider.updateSequence(
         widget.sequence!.copyWith(name: name, waves: _waves),

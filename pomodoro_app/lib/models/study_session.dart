@@ -1,8 +1,17 @@
+import 'package:hive/hive.dart';
+
+part 'study_session.g.dart';
+
 /// Modelo de uma sessão de estudo (registro no histórico)
-class StudySession {
+@HiveType(typeId: 0)
+class StudySession extends HiveObject {
+  @HiveField(0)
   final int? id;
+  @HiveField(1)
   final DateTime date;
+  @HiveField(2)
   final int durationMinutes;
+  @HiveField(3)
   final String sequenceName;
 
   StudySession({

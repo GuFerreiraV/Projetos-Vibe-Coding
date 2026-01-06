@@ -1,11 +1,19 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'study_wave.dart';
 
+part 'study_sequence.g.dart';
+
 /// Modelo de uma sequência de estudo (contém múltiplas ondas)
-class StudySequence {
+@HiveType(typeId: 1)
+class StudySequence extends HiveObject {
+  @HiveField(0)
   final int? id;
+  @HiveField(1)
   final String name;
+  @HiveField(2)
   final List<StudyWave> waves;
+  @HiveField(3)
   final bool isDefault;
 
   StudySequence({
@@ -16,7 +24,8 @@ class StudySequence {
   });
 
   /// Duração total da sequência em minutos
-  int get totalDuration => waves.fold(0, (sum, wave) => sum + wave.totalDuration);
+  int get totalDuration =>
+      waves.fold(0, (sum, wave) => sum + wave.totalDuration);
 
   /// Número de ondas na sequência
   int get waveCount => waves.length;
@@ -37,7 +46,9 @@ class StudySequence {
     return StudySequence(
       id: map['id'] as int?,
       name: map['name'] as String,
-      waves: wavesJson.map((w) => StudyWave.fromMap(w as Map<String, dynamic>)).toList(),
+      waves: wavesJson
+          .map((w) => StudyWave.fromMap(w as Map<String, dynamic>))
+          .toList(),
       isDefault: (map['isDefault'] as int) == 1,
     );
   }
@@ -58,13 +69,13 @@ class StudySequence {
 
   /// Sequência padrão Pomodoro clássica (25 min trabalho, 5 min descanso)
   static StudySequence get defaultSequence => StudySequence(
-        name: 'Pomodoro Clássico',
-        waves: [
-          StudyWave(workDuration: 25, breakDuration: 5, name: '1ª Onda'),
-          StudyWave(workDuration: 25, breakDuration: 5, name: '2ª Onda'),
-          StudyWave(workDuration: 25, breakDuration: 5, name: '3ª Onda'),
-          StudyWave(workDuration: 25, breakDuration: 15, name: '4ª Onda'),
-        ],
-        isDefault: true,
-      );
+    name: 'Pomodoro Clássico',
+    waves: [
+      StudyWave(workDuration: 25, breakDuration: 5, name: '1ª Onda'),
+      StudyWave(workDuration: 25, breakDuration: 5, name: '2ª Onda'),
+      StudyWave(workDuration: 25, breakDuration: 5, name: '3ª Onda'),
+      StudyWave(workDuration: 25, breakDuration: 15, name: '4ª Onda'),
+    ],
+    isDefault: true,
+  );
 }

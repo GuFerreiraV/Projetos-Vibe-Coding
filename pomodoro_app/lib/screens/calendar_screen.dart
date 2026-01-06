@@ -16,12 +16,14 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedDay = DateTime.now();
   DateTime _focusedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -65,7 +67,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primary.withOpacity(0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -77,7 +79,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
@@ -95,7 +97,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   'Total do Mês',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -124,7 +126,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 'sessões',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -142,7 +144,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -186,7 +188,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         calendarStyle: CalendarStyle(
           todayDecoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.3),
+            color: AppTheme.primary.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
           selectedDecoration: const BoxDecoration(
@@ -240,9 +242,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       bgColor = AppTheme.primary;
       textColor = Colors.white;
     } else if (isToday) {
-      bgColor = AppTheme.primary.withOpacity(0.2);
+      bgColor = AppTheme.primary.withValues(alpha: 0.2);
     } else if (minutes > 0) {
-      bgColor = AppTheme.primary.withOpacity(intensity * 0.5);
+      bgColor = AppTheme.primary.withValues(alpha: intensity * 0.5);
       if (intensity > 0.5) {
         textColor = Colors.white;
       }
@@ -291,7 +293,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -329,7 +331,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.1),
+                    color: AppTheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -386,7 +388,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: AppTheme.primary.withOpacity(0.1),
+                                color: AppTheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(

@@ -22,7 +22,7 @@ class CircularTimer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isBreak ? AppTheme.timerBreak : AppTheme.timerProgress;
-    
+
     return SizedBox(
       width: 280,
       height: 280,
@@ -38,14 +38,14 @@ class CircularTimer extends StatelessWidget {
               color: AppTheme.timerBackground,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
               ],
             ),
           ),
-          
+
           // Arco de progresso
           CustomPaint(
             size: const Size(260, 260),
@@ -56,7 +56,7 @@ class CircularTimer extends StatelessWidget {
               strokeWidth: 12,
             ),
           ),
-          
+
           // Conteúdo central
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -65,16 +65,18 @@ class CircularTimer extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: Icon(
-                  isBreak 
-                    ? Icons.coffee_rounded 
-                    : (isRunning ? Icons.local_fire_department_rounded : Icons.timer_rounded),
+                  isBreak
+                      ? Icons.coffee_rounded
+                      : (isRunning
+                            ? Icons.local_fire_department_rounded
+                            : Icons.timer_rounded),
                   key: ValueKey('$isBreak-$isRunning'),
                   size: 32,
                   color: color,
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Tempo
               Text(
                 time,
@@ -86,12 +88,15 @@ class CircularTimer extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Nome da fase
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

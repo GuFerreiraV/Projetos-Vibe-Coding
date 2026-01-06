@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'timer_screen.dart';
 import 'sequences_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/history_provider.dart';
 import 'calendar_screen.dart';
 
 /// Tela principal com navegação entre as 3 abas
@@ -24,16 +26,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -74,15 +73,23 @@ class _MainScreenState extends State<MainScreen> {
     required String label,
   }) {
     final isSelected = _currentIndex == index;
-    
+
     return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () {
+        setState(() => _currentIndex = index);
+        // Se mudou para a aba de Histórico (index 2), atualiza os dados
+        if (index == 2) {
+          context.read<HistoryProvider>().loadMonth(DateTime.now());
+        }
+      },
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(

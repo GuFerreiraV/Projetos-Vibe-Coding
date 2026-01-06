@@ -1,7 +1,15 @@
+import 'package:hive/hive.dart';
+
+part 'study_wave.g.dart';
+
 /// Modelo de uma "onda" de estudo (período de trabalho + descanso)
-class StudyWave {
+@HiveType(typeId: 2)
+class StudyWave extends HiveObject {
+  @HiveField(0)
   final int workDuration; // em minutos
+  @HiveField(1)
   final int breakDuration; // em minutos
+  @HiveField(2)
   final String? name;
 
   StudyWave({
@@ -37,11 +45,7 @@ class StudyWave {
     return list.toString();
   }
 
-  StudyWave copyWith({
-    int? workDuration,
-    int? breakDuration,
-    String? name,
-  }) {
+  StudyWave copyWith({int? workDuration, int? breakDuration, String? name}) {
     return StudyWave(
       workDuration: workDuration ?? this.workDuration,
       breakDuration: breakDuration ?? this.breakDuration,
