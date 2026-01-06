@@ -154,20 +154,20 @@ class NewsCard extends StatelessWidget {
     return Container(
       height: 180,
       width: double.infinity,
-      color: theme.colorScheme.surfaceVariant,
+      color: theme.colorScheme.surfaceContainerHighest,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.newspaper_rounded,
             size: 48,
-            color: theme.colorScheme.primary.withOpacity(0.5),
+            color: theme.colorScheme.primary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 8),
           Text(
             'Tech News',
             style: TextStyle(
-              color: theme.colorScheme.primary.withOpacity(0.5),
+              color: theme.colorScheme.primary.withValues(alpha: 0.5),
               fontWeight: FontWeight.bold,
             ),
           ),
